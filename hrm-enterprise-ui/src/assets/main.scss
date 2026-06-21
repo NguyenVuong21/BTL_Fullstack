@@ -1,0 +1,22 @@
+/* Hiệu ứng Đổ màu chuyển sắc cao cấp */
+.gradient-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  color: white !important;
+}
+
+.gradient-btn-green {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+}
+
+/* Kiểu dáng chữ tinh giản phong cách Apple */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.022em;
+}
+
+/* Bo tròn bảng dữ liệu Vuetify */
+.v-table {
+  background: transparent !important;
+  border-radius: 12px;
+}
