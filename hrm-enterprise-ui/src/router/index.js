@@ -13,6 +13,7 @@ import LeaveManagement from '../views/LeaveManagement.vue'
 import LeaveRequest from '../views/LeaveRequest.vue'
 import PayslipDetail from '../views/PayslipDetail.vue'
 import PositionManagement from '../views/PositionManagement.vue' // <--- 🌟 BƯỚC 1: IMPORT TRANG CHỨC VỤ
+import PayrollManagement from '../views/PayrollManagement.vue' // <--- 🌟 BƯỚC MỚI: IMPORT TRANG CHỐT LƯƠNG
 
 const routes = [
   // 🔑 1. Trang Login độc lập hẳn ra ngoài, cấu hình path gốc '/' trỏ thẳng vào đây
@@ -39,7 +40,10 @@ const routes = [
       { path: 'payslip', name: 'PayslipDetail', component: PayslipDetail },
 
       // 🚀 🌟 BƯỚC 2: KHAI BÁO PATH CON CHO QUẢN LÝ CHỨC VỤ
-      { path: 'positions', name: 'PositionManagement', component: PositionManagement }
+      { path: 'positions', name: 'PositionManagement', component: PositionManagement },
+
+      // 💰 🌟 BƯỚC MỚI: KHAI BÁO PATH CHO QUẢN LÝ/CHỐT LƯƠNG
+      { path: 'payroll-management', name: 'PayrollManagement', component: PayrollManagement }
     ]
   },
   
@@ -80,8 +84,9 @@ router.beforeEach((to, from, next) => {
 
     // 🛑 🌟 BƯỚC 3: PHÂN QUYỀN CHO QUẢN LÝ (Manager)
     // Chặn thêm trang '/sys/positions' vì chức năng cấu hình định mức lương/chức vụ này thuộc về Admin quyền tối cao.
+    // 🛑 Chặn thêm '/sys/payroll-management' vì chốt lương cũng là tác vụ quyền cao, dành riêng cho Admin.
     if (user.role === 'Manager') {
-      const managerBlockedPaths = ['/sys/employees', '/sys/system-health', '/sys/positions']
+      const managerBlockedPaths = ['/sys/employees', '/sys/system-health', '/sys/positions', '/sys/payroll-management']
       if (managerBlockedPaths.includes(to.path)) {
         // Cố tình vào trang cấm sẽ bị đá về trang dashboard công ty
         return next('/sys/dashboard')

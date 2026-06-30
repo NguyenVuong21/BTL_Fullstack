@@ -2,7 +2,7 @@
   <div>
     <div class="d-flex justify-space-between align-center mb-6">
       <div>
-        <h1 class="text-h4 font-weight-bold">Hồ sơ Nhân viên</h1>
+        <h1 class="text-h4 font-weight-bold text-white">Hồ sơ Nhân viên</h1>
         <p class="text-subtitle-2 text-disabled">Quản lý vòng đời nhân sự thuộc phân hệ HR Core Service</p>
       </div>
       <v-btn color="primary" prepend-icon="mdi-plus" class="gradient-btn" @click="openAddDialog">
@@ -289,7 +289,6 @@ const getContractColor = (type) => {
 // 1. LẤY DANH SÁCH NHÂN VIÊN TỪ DATABASE
 const fetchEmployees = async () => {
   try {
-    // 🚀 ĐẠ SỬA: Chuyển sang cổng Gateway 8001
     const response = await fetch('http://localhost:8001/api/hr/employees')
     if (response.ok) {
       employees.value = await response.json()
@@ -304,7 +303,6 @@ const fetchEmployees = async () => {
 // 2. XEM CHI TIẾT HỒ SƠ NHÂN VIÊN (CLICK ICON CON MẮT)
 const viewEmployee = async (id) => {
   try {
-    // 🚀 ĐẠ SỬA: Chuyển sang cổng Gateway 8001
     const response = await fetch(`http://localhost:8001/api/hr/employees/${id}`)
     if (response.ok) {
       currentEmployee.value = await response.json()
@@ -328,11 +326,10 @@ const openAddDialog = () => {
   isAddDialogOpen.value = true
 }
 
-// 4. MỞ FORM Ở CHẾ ĐỘ SỬA HỒ SƠ NHÂN VIÊN (BẢN FIX DỨT ĐIỂM QUAY VỀ MÃ 2)
+// 4. MỞ FORM Ở CHẾ ĐỘ SỬA HỒ SƠ NHÂN VIÊN
 const openEditDialog = (emp) => {
-  isEditMode.value = true // Kích hoạt trạng thái sửa
+  isEditMode.value = true 
   
-  // Ánh xạ an toàn tuyệt đối: Ưu tiên mã ID số trực tiếp, nếu không có mới dịch từ chữ
   let currentDeptId = emp.departmentId || emp.deptId;
   
   if (!currentDeptId) {
@@ -340,10 +337,9 @@ const openEditDialog = (emp) => {
     else if (emp.dept === 'Phòng Công nghệ' || emp.dept === 'Phòng Công Nghệ Thông Tin') currentDeptId = 2;
     else if (emp.dept === 'Phòng Nhân sự') currentDeptId = 3;
     else if (emp.dept === 'Phòng Tài chính') currentDeptId = 4;
-    else currentDeptId = 2; // Dự phòng cuối cùng nếu hoàn toàn không có dữ liệu phòng ban
+    else currentDeptId = 2; 
   }
 
-  // Đổ ngược dữ liệu vào Form
   newEmployee.value = {
     employeeId: emp.id,
     fullName: emp.name,
@@ -351,10 +347,10 @@ const openEditDialog = (emp) => {
     position: emp.position,
     contractType: emp.contractType,
     status: emp.status,
-    departmentId: Number(currentDeptId) // Ép kiểu số để v-select nhận diện chuẩn khớp 100% với value
+    departmentId: Number(currentDeptId) 
   }
   
-  isAddDialogOpen.value = true // Mở hộp thoại Form lên
+  isAddDialogOpen.value = true 
 }
 
 const saveEmployee = () => {
@@ -365,7 +361,7 @@ const saveEmployee = () => {
   }
 }
 
-// 5. LUỒNG API POST: THÊM MỚI NHÂN VIÊN VÀO SQL SERVER
+// 5. LUỒNG API POST: THÊM MỚI NHÂN VIÊN
 const submitCreateEmployee = async () => {
   if (!newEmployee.value.employeeId || !newEmployee.value.fullName || !newEmployee.value.email) {
     alert('Vui lòng điền đầy đủ Mã NV, Họ tên và Email nhé Vượng!')
@@ -373,7 +369,6 @@ const submitCreateEmployee = async () => {
   }
 
   try {
-    // 🚀 ĐẠ SỬA: Chuyển sang cổng Gateway 8001
     const response = await fetch('http://localhost:8001/api/hr/employees', {
       method: 'POST',
       headers: {
@@ -400,7 +395,6 @@ const submitCreateEmployee = async () => {
 const submitUpdateEmployee = async () => {
   try {
     const id = newEmployee.value.employeeId
-    // 🚀 ĐẠ SỬA: Chuyển sang cổng Gateway 8001
     const response = await fetch(`http://localhost:8001/api/hr/employees/${id}`, {
       method: 'PUT',
       headers: {
@@ -427,7 +421,6 @@ const submitUpdateEmployee = async () => {
 const deleteEmployee = async (id) => {
   if (confirm(`Bạn có chắc chắn muốn xóa nhân viên có mã ${id} khỏi hệ thống không?`)) {
     try {
-      // 🚀 ĐẠ SỬA: Chuyển sang cổng Gateway 8001
       const response = await fetch(`http://localhost:8001/api/hr/employees/${id}`, {
         method: 'DELETE'
       })
@@ -453,13 +446,18 @@ onMounted(() => {
   fetchEmployees()
 })
 
+// 🟢 BẢN FIX: Chống lệch chữ hoa / chữ thường tuyệt đối ở Bộ lọc phòng ban
 const filteredEmployees = computed(() => {
   return employees.value.filter(emp => {
-    const name = emp.name ? emp.name.toLowerCase() : ''
-    const id = emp.id ? emp.id.toLowerCase() : ''
+    const name = emp.name ? emp.name.toLowerCase().trim() : ''
+    const id = emp.id ? emp.id.toLowerCase().trim() : ''
     
-    const matchesSearch = name.includes(search.value.toLowerCase()) || id.includes(search.value.toLowerCase())
-    const matchesDept = selectedDept.value === 'Tất cả phòng ban' || emp.dept === selectedDept.value
+    const matchesSearch = name.includes(search.value.toLowerCase().trim()) || id.includes(search.value.toLowerCase().trim())
+    
+    // Ép chữ thường và xóa khoảng trắng cả 2 vế để "Phòng Công nghệ" khớp hoàn toàn với "Phòng Công Nghệ"
+    const matchesDept = selectedDept.value === 'Tất cả phòng ban' || 
+      (emp.dept && emp.dept.toLowerCase().trim() === selectedDept.value.toLowerCase().trim())
+      
     return matchesSearch && matchesDept
   })
 })

@@ -105,7 +105,7 @@ const initEmployeeData = () => {
 const fetchLeaveHistory = async () => {
   if (!empId.value) return
   try {
-    const response = await fetch(`http://localhost:8000/api/hr/leave/history/${empId.value}`)
+    const response = await fetch(`http://localhost:8001/api/hr/leave/history/${empId.value}`)
     if (response.ok) {
       leaveHistory.value = await response.json()
     }
@@ -123,7 +123,7 @@ const submitLeave = async () => {
 
   loading.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/hr/leave/submit', {
+    const response = await fetch('http://localhost:8001/api/hr/leave/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

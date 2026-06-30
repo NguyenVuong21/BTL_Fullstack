@@ -1,0 +1,23 @@
+# .NET Build artifacts
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.user
+*.cache
+*.json.cache
+
+# Node modules & UI artifacts
+node_modules/
+dist/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDEs and editors
+.vs/
+.vscode/
+*.suo
+*.userosscache

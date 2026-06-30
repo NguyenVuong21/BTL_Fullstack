@@ -17,11 +17,12 @@
         </div>
 
         <div v-if="currentRole === 'Admin'">
-          <v-list-subheader class="text-disabled font-weight-bold text-uppercase text-caption mt-4">HR Core Service</v-list-subheader>
-          <v-list-item prepend-icon="mdi-account-multiple-outline" title="Hồ sơ nhân viên" to="/sys/employees" value="emp"></v-list-item>
-          <v-list-item prepend-icon="mdi-sitemap-outline" title="Cơ cấu tổ chức (Tree)" to="/sys/organization" value="org"></v-list-item>
-          <v-list-item prepend-icon="mdi-briefcase-variant-outline" title="Quản lý chức vụ" to="/sys/positions" value="pos"></v-list-item>
-        </div>
+  <v-list-subheader class="text-disabled font-weight-bold text-uppercase text-caption mt-4">HR Core Service</v-list-subheader>
+  <v-list-item prepend-icon="mdi-account-multiple-outline" title="Hồ sơ nhân viên" to="/sys/employees" value="emp"></v-list-item>
+  <v-list-item prepend-icon="mdi-sitemap-outline" title="Cơ cấu tổ chức (Tree)" to="/sys/organization" value="org"></v-list-item>
+  <v-list-item prepend-icon="mdi-briefcase-variant-outline" title="Quản lý chức vụ" to="/sys/positions" value="pos"></v-list-item>
+  <v-list-item prepend-icon="mdi-cash-register" title="Quản lý Bảng lương" to="/sys/payroll-management" value="payroll-mgmt"></v-list-item>
+</div>
 
         <div v-if="currentRole === 'Admin' || currentRole === 'Manager'">
           <v-list-subheader class="text-disabled font-weight-bold text-uppercase text-caption mt-4">Attendance Service</v-list-subheader>

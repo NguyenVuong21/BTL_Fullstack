@@ -5,7 +5,6 @@
         <h1 class="text-h4 font-weight-bold tracking-tight">Hệ thống Điều hành Tổng hợp</h1>
         <p class="text-subtitle-2 text-disabled">Dữ liệu thời gian thực đồng bộ từ các Microservices</p>
       </div>
-      <!-- Kích hoạt hàm fetchDashboardStats khi click nút đồng bộ -->
       <v-btn color="primary" prepend-icon="mdi-refresh" variant="tonal" @click="fetchDashboardStats">
         Đồng bộ lại dữ liệu
       </v-btn>
@@ -68,42 +67,64 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-// Khai báo các biến lưu trữ giá trị số liệu động mặc định bằng 0
+// Biến lưu trữ giá trị đếm động từ Database
 const totalEmp = ref(0)
 const activeEmp = ref(0)
 const probationEmp = ref(0)
 const officialEmp = ref(0)
 
-// Map biến động vào cấu trúc mảng KPIs để hiển thị lên Vuetify Card
+// Cấu hình các thẻ hiển thị số liệu lên màn hình
 const kpis = computed(() => [
-  { title: 'Tổng nhân sự', value: totalEmp.value || 0, icon: 'mdi-account-group-outline', color: 'primary', change: '+4.2%', glowColor: 'rgba(99,102,241,0.08)' },
-  { title: 'Nhân sự hoạt động', value: activeEmp.value || 0, icon: 'mdi-account-check-outline', color: 'success', change: '+1.5%', glowColor: 'rgba(16,185,129,0.08)' },
-  { title: 'Nhân sự thử việc', value: probationEmp.value || 0, icon: 'mdi-clock-outline', color: 'warning', change: '-5%', glowColor: 'rgba(245,158,11,0.08)' },
-  { title: 'Nhân sự chính thức', value: officialEmp.value || 0, icon: 'mdi-file-certificate-outline', color: 'accent', change: '+2.1%', glowColor: 'rgba(168,85,247,0.08)' }
+  { title: 'Tổng nhân sự', value: totalEmp.value, icon: 'mdi-account-group-outline', color: 'primary', change: '+4.2%', glowColor: 'rgba(99,102,241,0.08)' },
+  { title: 'Nhân sự hoạt động', value: activeEmp.value, icon: 'mdi-account-check-outline', color: 'success', change: '+1.5%', glowColor: 'rgba(16,185,129,0.08)' },
+  { title: 'Nhân sự thử việc', value: probationEmp.value, icon: 'mdi-clock-outline', color: 'warning', change: '-5%', glowColor: 'rgba(245,158,11,0.08)' },
+  { title: 'Nhân sự chính thức', value: officialEmp.value, icon: 'mdi-file-certificate-outline', color: 'accent', change: '+2.1%', glowColor: 'rgba(168,85,247,0.08)' }
 ])
 
-// HÀM GỌI API ĐỂ THU THẬP SỐ LIỆU ĐỘNG TỪ SQL SERVER QUA GATEWAY
+// 🚀 HÀM GỌI API THẬT QUA GATEWAY ĐỂ ĐẾM SỐ LIỆU ĐỘNG TỪ SQL SERVER
 const fetchDashboardStats = async () => {
   try {
-    // Gọi qua Ocelot Gateway cổng 8000 điều hướng trực tiếp vào API của HRController.cs
-    const response = await fetch('http://localhost:8000/api/hr/dashboard/stats')
+    console.log('Đang kết nối API Gateway cổng 8001 để lấy danh sách nhân sự thật...')
+    const response = await fetch('http://localhost:8001/api/hr/employees')
+    
     if (response.ok) {
-      const data = await response.json()
+      const employees = await response.json()
+      console.log('Dữ liệu nhân viên thực tế nhận từ SQL Server:', employees)
       
-      // Đổ dữ liệu thật nhận được từ API vào các biến phản xạ (ref)
-      totalEmp.value = data.total
-      activeEmp.value = data.active
-      probationEmp.value = data.probation
-      officialEmp.value = data.official
+      if (Array.isArray(employees)) {
+        // 📊 1. Đếm tổng số nhân viên đang có trong DB
+        totalEmp.value = employees.length
+        
+        // 📊 2. Lọc nhân viên đang hoạt động (tự động kiểm tra cả tiếng Anh/Việt/Mã số tùy Toàn viết)
+        activeEmp.value = employees.filter(emp => 
+          emp.status === 'Active' || 
+          emp.status === 'Hoạt động' || 
+          emp.trangThai === 1 ||
+          emp.status === true
+        ).length
+        
+        // 📊 3. Lọc nhân viên thử việc dựa theo loại hợp đồng hoặc trạng thái dữ liệu thật
+        probationEmp.value = employees.filter(emp => 
+          emp.status === 'Probation' || 
+          emp.status === 'Thử việc' || 
+          emp.contractType?.toLowerCase().includes('thử việc') ||
+          emp.contractType?.toLowerCase().includes('probation')
+        ).length
+        
+        // 📊 4. Tính toán số nhân sự chính thức còn lại
+        officialEmp.value = totalEmp.value - probationEmp.value
+        
+        console.log('Đồng bộ số liệu Dashboard thật thành công rực rỡ!')
+      }
     } else {
-      console.error('Lỗi phản hồi từ API Gateway khi lấy số liệu Dashboard.')
+      console.error('Lỗi phản hồi từ Gateway. Mã lỗi:', response.status)
     }
   } catch (error) {
-    console.error('Không thể kết nối đến API Gateway cổng 8000:', error)
+    console.error('Lỗi kết nối mạng đến API Gateway:', error)
   }
 }
 
-// Tự động chạy hàm cập nhật số liệu ngay khi mở trang Dashboard
+// Tự động kích hoạt khi load trang
 onMounted(() => {
   fetchDashboardStats()
 })

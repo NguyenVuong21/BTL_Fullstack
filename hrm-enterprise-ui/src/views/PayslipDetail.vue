@@ -36,35 +36,43 @@
       <div class="text-subtitle-1 font-weight-bold text-white mb-2">💰 Các khoản thu nhập</div>
       <div class="d-flex justify-space-between text-subtitle-2 py-2 text-slate-300">
         <span>Lương hành chính cơ bản:</span>
-        <span class="font-weight-bold text-white">{{ formatMoney(payrollData?.baseSalary) }}</span>
+        <span class="font-weight-bold text-white">{{ formatMoney(payrollData?.BasicSalary) }}</span>
       </div>
       <div class="d-flex justify-space-between text-subtitle-2 py-2 text-slate-300">
         <span>Phụ cấp công việc & đi lại:</span>
-        <span class="font-weight-bold text-white">{{ formatMoney(payrollData?.allowance) }}</span>
+        <span class="font-weight-bold text-white">{{ formatMoney(payrollData?.Allowances) }}</span>
       </div>
 
       <div class="text-subtitle-1 font-weight-bold text-white mt-6 mb-2">🛑 Các khoản khấu trừ</div>
+      
+      <!-- Khoản 1: Bảo hiểm mặc định luôn luôn tự tính 10.5% dựa trên lương gốc -->
       <div class="d-flex justify-space-between text-subtitle-2 py-2 text-slate-300">
         <span>Bảo hiểm xã hội & Y tế (10.5%):</span>
-        <span class="font-weight-bold text-error">-{{ formatMoney(payrollData?.insurance) }}</span>
+        <span class="font-weight-bold text-error">-{{ formatMoney(insuranceAmount) }}</span>
       </div>
-      <div class="d-flex justify-space-between text-subtitle-2 py-2 text-slate-300">
-        <span>Phạt đi muộn ({{ payrollData?.lateCount }} lần):</span>
-        <span class="font-weight-bold text-error">-{{ formatMoney(payrollData?.fineAmount) }}</span>
+
+      <!-- Khoản 2: Phạt đi muộn (Chỉ hiển thị dòng này khi số tiền phạt > 0) -->
+      <div v-if="lateFineAmount > 0" class="d-flex justify-space-between text-subtitle-2 py-2 text-slate-300">
+        <span>Phạt đi muộn (Phát sinh đi muộn trong tháng):</span>
+        <span class="font-weight-bold text-error">-{{ formatMoney(lateFineAmount) }}</span>
       </div>
 
       <v-divider class="border-slate-700 my-4"></v-divider>
 
       <v-card color="rgba(6, 182, 212, 0.1)" class="pa-4 rounded-lg border border-cyan-800 d-flex justify-space-between align-center">
         <span class="text-subtitle-1 font-weight-bold text-white">💵 Thực lĩnh cuối cùng (Net):</span>
-        <span class="text-h4 font-weight-black text-cyan-accent-2">{{ formatMoney(payrollData?.netSalary) }}</span>
+        <span class="text-h4 font-weight-black text-cyan-accent-2">{{ formatMoney(payrollData?.NetSalary) }}</span>
       </v-card>
+
+      <div v-if="payrollData?.status" class="text-caption text-disabled mt-4 text-right">
+        Trạng thái: <span class="font-weight-bold text-white">{{ payrollData.status }}</span>
+      </div>
     </v-card>
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -72,6 +80,21 @@ const selectedMonth = ref('2026-06')
 const payrollData = ref(null)
 const loading = ref(false)
 const targetEmpId = ref('')
+
+// 🧮 Logic tính toán động phân rã các khoản khấu trừ từ dữ liệu gốc
+// 1. Số tiền Bảo hiểm định mức bắt buộc (10.5% lương cơ bản)
+const insuranceAmount = computed(() => {
+  if (!payrollData.value || !payrollData.value.BasicSalary) return 0
+  return payrollData.value.BasicSalary * 0.105
+})
+
+// 2. Số tiền Phạt đi muộn = Tổng số tiền khấu trừ trong DB - Tiền bảo hiểm định mức
+const lateFineAmount = computed(() => {
+  if (!payrollData.value || !payrollData.value.Deductions) return 0
+  const totalDeductions = payrollData.value.Deductions
+  const fine = totalDeductions - insuranceAmount.value
+  return fine > 0 ? fine : 0
+})
 
 // Xử lý tìm mã nhân viên thông minh khi trang được tải lên
 const initEmployeeId = () => {
@@ -97,9 +120,12 @@ const fetchPayrollData = async () => {
     const response = await fetch(`http://localhost:8001/api/hr/payroll/detail/${targetEmpId.value}/${selectedMonth.value}`)
     if (response.ok) {
       payrollData.value = await response.json()
+    } else {
+      payrollData.value = null
     }
   } catch (error) {
     console.error('Lỗi khi tải phiếu lương từ Gateway 8001:', error)
+    payrollData.value = null
   } finally {
     loading.value = false
   }

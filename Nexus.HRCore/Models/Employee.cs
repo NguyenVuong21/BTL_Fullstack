@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,12 +19,16 @@ namespace Nexus.HRCore.Models
         public string Email { get; set; } = string.Empty;
 
         [StringLength(50)]
-        public string Position { get; set; } = string.Empty; // Kỹ sư, Trưởng phòng...
+        public string Position { get; set; } = string.Empty; // Lưu chữ cũ
+
+        // --- CHỈ GIỮ LẠI CỘT NÀY ĐỂ ĐỒNG BỘ DỮ LIỆU SỐ VỚI DATABASE ---
+        public int? PositionId { get; set; } 
+        // -------------------------------------------------------------
 
         [StringLength(30)]
-        public string ContractType { get; set; } = "Chính thức"; // Chính thức, Thử việc, Part-time
+        public string ContractType { get; set; } = "Chính thức"; 
 
-        public DateTime JoinDate { get; set; } // Để trống phần gán mặc định để tránh lỗi model thay đổi liên tục
+        public DateTime JoinDate { get; set; } 
 
         [StringLength(20)]
         public string Status { get; set; } = "Hoạt động";

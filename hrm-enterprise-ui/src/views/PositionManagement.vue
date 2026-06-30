@@ -10,7 +10,7 @@
         <v-col cols="12" sm="6">
           <v-text-field
             v-model="search"
-            label="Tìm kiếm tên hoặc mã chức vụ..."
+            label="Tìm kiếm tên chức vụ..."
             prepend-inner-icon="mdi-magnify"
             variant="outlined"
             density="compact"
@@ -36,15 +36,15 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="pos in filteredPositions" :key="pos.positionId">
-            <td class="font-weight-bold text-cyan-accent-2">{{ pos.positionId }}</td>
-            <td class="text-white font-weight-medium">{{ pos.positionName }}</td>
+          <tr v-for="pos in filteredPositions" :key="pos.id">
+            <td class="font-weight-bold text-cyan-accent-2">{{ pos.id }}</td>
+            <td class="text-white font-weight-medium">{{ pos.name }}</td>
             <td class="text-success font-mono font-weight-bold">{{ formatMoney(pos.baseSalary) }}</td>
             <td class="text-center">
               <v-btn icon variant="text" color="amber" size="small" @click="openEditDialog(pos)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-btn icon variant="text" color="error" size="small" @click="deletePosition(pos.positionId)">
+              <v-btn icon variant="text" color="error" size="small" @click="deletePosition(pos.id)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </td>
@@ -64,14 +64,15 @@
         <v-card-text>
           <v-form ref="formRef">
             <v-text-field
-              v-model="currentPosition.positionId"
+              v-if="isEditMode"
+              v-model="currentPosition.id"
               label="Mã chức vụ"
               variant="outlined"
-              :disabled="isEditMode"
+              disabled
               class="mb-3"
             ></v-text-field>
             <v-text-field
-              v-model="currentPosition.positionName"
+              v-model="currentPosition.name"
               label="Tên chức vụ"
               variant="outlined"
               class="mb-3"
@@ -104,13 +105,13 @@ const search = ref('')
 const isDialogOpen = ref(false)
 const isEditMode = ref(false)
 
+// 🛠️ ĐÃ FIX: Khởi tạo biến khớp cấu trúc API
 const currentPosition = ref({
-  positionId: '',
-  positionName: '',
+  id: null,
+  name: '',
   baseSalary: 0
 })
 
-// 🚀 1. FETCH DANH SÁCH QUA GATEWAY 8001
 const fetchPositions = async () => {
   try {
     const response = await fetch('http://localhost:8001/api/hr/positions')
@@ -122,14 +123,12 @@ const fetchPositions = async () => {
   }
 }
 
-// 2. MỞ DIALOG CHẾ ĐỘ THÊM
 const openAddDialog = () => {
   isEditMode.value = false
-  currentPosition.value = { positionId: '', positionName: '', baseSalary: 0 }
+  currentPosition.value = { id: null, name: '', baseSalary: 0 }
   isDialogOpen.value = true
 }
 
-// 3. MỞ DIALOG CHẾ ĐỘ SỬA
 const openEditDialog = (pos) => {
   isEditMode.value = true
   currentPosition.value = { ...pos }
@@ -144,13 +143,17 @@ const savePosition = () => {
   }
 }
 
-// 🚀 4. API POST: THÊM MỚI QUA GATEWAY 8001
 const submitCreatePosition = async () => {
   try {
+    // 🛠️ ĐÃ FIX: Chỉ gửi name và baseSalary lên vì ID do SQL Server sinh tự động
+    const payload = {
+      name: currentPosition.value.name,
+      baseSalary: currentPosition.value.baseSalary
+    }
     const response = await fetch('http://localhost:8001/api/hr/positions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(currentPosition.value)
+      body: JSON.stringify(payload)
     })
     if (response.ok) {
       alert('Thêm chức vụ mới thành công rực rỡ! 🎉')
@@ -162,29 +165,29 @@ const submitCreatePosition = async () => {
   }
 }
 
-// 🚀 5. API PUT: CẬP NHẬT QUA GATEWAY 8001
 const submitUpdatePosition = async () => {
   try {
-    const id = currentPosition.value.positionId
+    const id = currentPosition.value.id
+    const payload = {
+      id: id,
+      name: currentPosition.value.name,
+      baseSalary: currentPosition.value.baseSalary
+    }
     const response = await fetch(`http://localhost:8001/api/hr/positions/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      // 🔑 SỬA Ở ĐÂY: Gửi kèm cả baseSalary lên Backend nữa nhé Vượng
-      body: JSON.stringify({ 
-        positionName: currentPosition.value.positionName,
-        baseSalary: currentPosition.value.baseSalary 
-      })
+      body: JSON.stringify(payload)
     })
     if (response.ok) {
       alert(`Cập nhật thông tin chức vụ thành công! 🎉`)
       isDialogOpen.value = false
-      fetchPositions() // Load lại bảng dữ liệu mới
+      fetchPositions() 
     }
   } catch (error) {
     console.error(error)
   }
 }
-// 🚀 6. API DELETE: XÓA QUA GATEWAY 8001
+
 const deletePosition = async (id) => {
   if (confirm(`Bạn có chắc chắn muốn xóa chức vụ mã ${id}?`)) {
     try {
@@ -205,10 +208,12 @@ const formatMoney = (val) => {
   return val ? val.toLocaleString('vi-VN') + ' VND' : '0 VND'
 }
 
+// 🛠️ ĐÃ FIX: Sửa hàm filter theo pos.name để hết lỗi undefined
 const filteredPositions = computed(() => {
+  if (!Array.isArray(positions.value)) return []
   return positions.value.filter(pos => 
-    pos.positionName.toLowerCase().includes(search.value.toLowerCase()) ||
-    pos.positionId.toLowerCase().includes(search.value.toLowerCase())
+    pos.name?.toLowerCase().includes(search.value.toLowerCase()) ||
+    String(pos.id).includes(search.value)
   )
 })
 

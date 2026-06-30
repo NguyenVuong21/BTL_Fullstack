@@ -8,30 +8,29 @@ namespace Nexus.HRCore.Data
     {
         public HRDbContext(DbContextOptions<HRDbContext> options) : base(options) { }
 
+        // ========================================================
+        // 👥 DANH SÁCH CÁC BẢNG QUẢN LÝ CỦA NHÓM 1 (HR CORE)
+        // ========================================================
         public DbSet<Department> Departments { get; set; }
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<Attendance> Attendances { get; set; } 
         public DbSet<User> Users { get; set; } 
-        
-        // 🕒 🛠️ ĐÃ THÊM: Đăng ký bảng quản lý nghỉ phép vào bối cảnh dữ liệu
-        public DbSet<LeaveRequest> LeaveRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Bỏ qua cơ chế cảnh báo thay đổi Model nghiêm ngặt của .NET
             modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
-            // 1. Cấu hình mối quan hệ tự tham chiếu dạng cây cho Phòng Ban
+            // 1. Cấu hình mối quan hệ tự tham chiếu dạng cây cho Phòng Ban (Self-referencing)
             modelBuilder.Entity<Department>()
                 .HasOne(d => d.Parent)
                 .WithMany(d => d.Children)
                 .HasForeignKey(d => d.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 2. Cấu hình khoá ngoại rõ ràng giữa User và Employee (Chống lỗi cascade delete)
+            // 2. Cấu hình khoá ngoại rõ ràng giữa User và Employee
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Employee)
-                .WithMany() // Một nhân viên có thể có 1 tài khoản
+                .WithMany() 
                 .HasForeignKey(u => u.EmployeeId)
                 .OnDelete(DeleteBehavior.Cascade);
 

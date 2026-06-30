@@ -1,67 +1,63 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamPathTemplate": "/api/Attendance/check",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 8000
-        }
-      ],
-      "UpstreamPathTemplate": "/api/auth/{everything}",
-      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "OPTIONS" ]
+      "DownstreamHostAndPorts": [{ "Host": "26.141.173.100", "Port": 8002 }],
+      "UpstreamPathTemplate": "/api/hr/attendance/check",
+      "UpstreamHttpMethod": [ "Post", "OPTIONS" ]
     },
     {
-      "DownstreamPathTemplate": "/api/hr/attendance/{everything}",
+      "DownstreamPathTemplate": "/api/Attendance/history/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 8000
-        }
-      ],
-      "UpstreamPathTemplate": "/api/hr/attendance/{everything}",
-      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "OPTIONS" ]
+      "DownstreamHostAndPorts": [{ "Host": "26.141.173.100", "Port": 8002 }],
+      "UpstreamPathTemplate": "/api/hr/attendance/history/{everything}",
+      "UpstreamHttpMethod": [ "Get", "OPTIONS" ]
     },
     {
-      "DownstreamPathTemplate": "/api/hr/leave/{everything}",
+      "DownstreamPathTemplate": "/api/Attendance/today-status",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 8000
-        }
-      ],
+      "DownstreamHostAndPorts": [{ "Host": "26.141.173.100", "Port": 8002 }],
+      "UpstreamPathTemplate": "/api/hr/attendance/today-status",
+      "UpstreamHttpMethod": [ "Get", "OPTIONS" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Attendance/all",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "26.141.173.100", "Port": 8002 }],
+      "UpstreamPathTemplate": "/api/hr/attendance/all",
+      "UpstreamHttpMethod": [ "Get", "OPTIONS" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Leave/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "26.141.173.100", "Port": 8002 }],
       "UpstreamPathTemplate": "/api/hr/leave/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "OPTIONS" ]
     },
     {
-      "DownstreamPathTemplate": "/api/hr/payroll/{everything}",
+      "DownstreamPathTemplate": "/api/payroll/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 8000
-        }
-      ],
+      "DownstreamHostAndPorts": [{ "Host": "26.108.49.191", "Port": 8003 }],
       "UpstreamPathTemplate": "/api/hr/payroll/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "OPTIONS" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 8000 }],
+      "UpstreamPathTemplate": "/api/auth/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "OPTIONS" ]
     },
     {
       "DownstreamPathTemplate": "/api/hr/{everything}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 8000
-        }
-      ],
+      "DownstreamHostAndPorts": [{ "Host": "localhost", "Port": 8000 }],
       "UpstreamPathTemplate": "/api/hr/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete", "OPTIONS" ]
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:8001"
+    "BaseUrl": "http://127.0.0.1:8001"
   }
 }
